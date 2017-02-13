@@ -1,0 +1,17 @@
+function main() { 
+ //include your e-mail below 
+ var email = "josh@ardentcreative.com.com";
+
+ //include the name of the account to specify the account in the e-mail 
+ var accountName = "account name"; 
+  
+ var codeURL = "https://s3.amazonaws.com/ppc-hero-tools/monthly-projections.js"; 
+ var code = ""; 
+ function getCode(url) { 
+   var stuff = UrlFetchApp.fetch(url).getContentText(); 
+   return stuff; 
+ } 
+ var code = getCode(codeURL); 
+  
+ eval(code);   
+} 
