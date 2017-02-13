@@ -1,0 +1,36 @@
+/****************************************
+ * Update Bids Using a Google Spreadsheet
+ * Created By: Josh Matthews
+****************************************/
+function main() {
+  var SPREADSHEET_URL = "https://docs.google.com/spreadsheets/d/18VkzSv7iXsDj3uM52d5bDFTUYexT6iF8RJ4DbEDle00/edit#gid=0";
+    
+  var spreadsheet = SpreadsheetApp.openByUrl(SPREADSHEET_URL);
+  var sheet = spreadsheet.getSheetByName('KeywordBids');
+  var data = sheet.getRange("A:E").getValues();
+   
+  var kwBidHash = {};
+  for(var i in data) {
+    if(i == 0) { continue; }
+    if(data[i][0] === '') { break; }
+    var kwKey = Utilities.base64Encode([data[i][0],data[i][1],data[i][2]].join('~~!~~'));
+    kwBidHash[kwKey] = data[i];
+  }
+   
+  var kwIter = AdWordsApp.keywords()
+    .withCondition("Status = ENABLED")
+    .get();
+   
+  while(kwIter.hasNext()) {
+    var kw = kwIter.next();
+    var campName = kw.getCampaign().getName();
+    var kwKey = Utilities.base64Encode([campName,kw.getText(),kw.getMatchType()].join('~~!~~'));
+    if(kwBidHash[kwKey]) {
+      if(kwBidHash[kwKey][3] === "FIXED") {
+        kw.setMaxCpc(kwBidHash[kwKey][4]);
+      }else{
+        kw.setMaxCpc(kw.getMaxCpc() * (1+kwBidHash[kwKey][4]));
+      }
+    }
+  }
+}
